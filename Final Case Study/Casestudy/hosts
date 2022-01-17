@@ -1,8 +1,0 @@
-Teacher     ansible_host=192.168.25.1
-Admin       ansible_host=10.0.0.2
-Student     ansible_host=10.0.0.6
-
-[Routers]
-Teacher
-Admin
-Student
