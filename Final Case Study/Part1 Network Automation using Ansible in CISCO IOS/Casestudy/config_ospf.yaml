@@ -1,0 +1,51 @@
+---
+  - name: configure single area ospf
+    hosts: Routers
+    gather_facts: false
+    connection: local
+    vars:
+      cli:
+        username: cisco
+        password: cisco123!
+    tasks:
+      - name: Configure OSPF for Student
+        when: ansible_host == "10.0.0.6"
+        ios_config:
+          provider: "{{ cli }}"
+          parents: router ospf 100
+          lines:
+            - network 10.0.0.4 0.0.0.3 area 0
+      - name: Configure OSPF Teacher
+        when: ansible_host == "192.168.25.1"
+        ios_config:
+          provider: "{{ cli }}"
+          parents: router ospf 10
+          lines:
+            - network 10.0.0.0 0.0.0.3 area 0
+            - network 192.168.25.0 0.0.0.255 area 0
+            - passive-interface FastEthernet0/0
+      - name: Configure OSPF Admin
+        when: ansible_host == "10.0.0.2"
+        ios_config:
+          provider: "{{ cli }}"
+          parents: router ospf 100
+          lines:
+            - network 10.0.0.0 0.0.0.3 area 0
+            - network 10.0.0.4 0.0.0.3 area 0
+      - name: display running config
+        ios_command:
+          provider: "{{ cli }}"
+          commands:
+              - show running-config
+        register: config
+
+      - name: save output to file
+        copy:
+          content: "{{config.stdout[0]}}"
+          dest: "file/show_run_{{inventory_hostname}}.txt"
+      - name: save config
+        ios_config:
+          provider: "{{ cli }}"
+          lines:
+            - do write
+            
